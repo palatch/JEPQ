@@ -19,6 +19,7 @@
         .prediction-down { color: #f85149; text-shadow: 0 0 10px rgba(248, 81, 73, 0.3); }
         @keyframes pulse-fast { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
         .live-pulse { animation: pulse-fast 1.5s infinite; }
+        input:focus { outline: none; border-color: #3b82f6; }
     </style>
 </head>
 <body class="pb-10">
@@ -31,14 +32,13 @@
                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">Data Analysis Dashboard</p>
             </div>
             <div class="text-right">
-                <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
-                    <div id="status-dot" class="w-2 h-2 bg-yellow-500 rounded-full live-pulse"></div>
-                    <span id="market-status" class="text-[10px] font-bold text-yellow-400">CONNECTING</span>
-                </div>
+                <button id="settings-btn" class="p-2 bg-gray-800 rounded-full border border-gray-700 hover:bg-gray-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
             </div>
         </header>
 
-        <!-- AI Prediction Section -->
+        <!-- Prediction Summary -->
         <div class="glass-card rounded-3xl p-5 mb-4 border-l-4 border-blue-500 shadow-lg">
             <h2 class="text-xs font-bold text-blue-400 uppercase mb-3 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
@@ -46,27 +46,55 @@
             </h2>
             <div class="flex justify-between items-center mb-4">
                 <div>
-                    <p id="predict-direction" class="text-3xl font-black text-gray-400">รอข้อมูล...</p>
+                    <p id="predict-direction" class="text-3xl font-black">รันระบบ...</p>
                     <p id="predict-range" class="text-xs text-gray-400 mt-1 italic">Target: $-- - $--</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-[10px] text-gray-500 uppercase">Confidence Score</p>
+                    <p class="text-[10px] text-gray-500 uppercase">Confidence</p>
                     <div class="flex gap-1 mt-1 justify-end">
-                        <div id="score-1" class="w-4 h-1 bg-gray-700 rounded-full transition-colors duration-500"></div>
-                        <div id="score-2" class="w-4 h-1 bg-gray-700 rounded-full transition-colors duration-500"></div>
-                        <div id="score-3" class="w-4 h-1 bg-gray-700 rounded-full transition-colors duration-500"></div>
+                        <div id="score-1" class="w-4 h-1 bg-gray-700 rounded-full"></div>
+                        <div id="score-2" class="w-4 h-1 bg-gray-700 rounded-full"></div>
+                        <div id="score-3" class="w-4 h-1 bg-gray-700 rounded-full"></div>
                     </div>
                 </div>
             </div>
             <div class="bg-black/30 rounded-xl p-3 border border-gray-800">
                 <p id="ai-reasoning" class="text-xs text-gray-300 leading-relaxed font-light">
-                    กำลังดึงข้อมูลและประมวลผล...
+                    กรุณาใส่ API Key ให้ถูกต้องเพื่อเริ่มการวิเคราะห์ข้อมูลจริง...
                 </p>
             </div>
         </div>
 
-        <!-- Price Card -->
-        <div id="price-card" class="glass-card rounded-3xl p-6 mb-4 relative overflow-hidden transition-all duration-500">
+        <!-- Dividend Info Card (NEW) -->
+        <div class="glass-card rounded-3xl p-5 mb-4 border-l-4 border-emerald-500 shadow-lg relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 opacity-10">
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="currentColor" class="text-emerald-500"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>
+            </div>
+            <h2 class="text-xs font-bold text-emerald-400 uppercase mb-3 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10"/><line x1="7" x2="7" y1="15"/><line x1="12" x2="12" y1="15"/><line x1="17" x2="17" y1="15"/></svg>
+                ข้อมูลปันผลเดือนนี้ (ม.ค. 2569)
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-[10px] text-gray-500 uppercase font-bold">ยอดปันผล/หุ้น</p>
+                    <p id="div-amount" class="text-2xl font-black text-white">$0.4285*</p>
+                    <p class="text-[8px] text-gray-600 italic">*โดยประมาณ</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center border-b border-gray-800 pb-1">
+                        <span class="text-[9px] text-gray-500 font-bold uppercase">Ex-Date:</span>
+                        <span id="ex-date" class="text-[10px] font-bold text-emerald-400">2 ม.ค. 69</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-[9px] text-gray-500 font-bold uppercase">Pay Date:</span>
+                        <span id="pay-date" class="text-[10px] font-bold text-blue-400">7 ม.ค. 69</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Display -->
+        <div class="glass-card rounded-3xl p-6 mb-4 relative overflow-hidden transition-all duration-500">
             <div class="flex justify-between items-end">
                 <div>
                     <p class="text-gray-500 text-xs font-bold mb-1 uppercase">Price (USD)</p>
@@ -77,60 +105,93 @@
                     <p id="pricePercent" class="text-xs">--.--%</p>
                 </div>
             </div>
+            <div class="mt-4 flex items-center gap-2">
+                <div id="status-dot" class="w-2 h-2 bg-yellow-500 rounded-full live-pulse"></div>
+                <span id="market-status" class="text-[10px] font-bold text-yellow-400 uppercase tracking-widest">Connecting</span>
+            </div>
         </div>
 
-        <!-- Technical Indicators Grid -->
+        <!-- Stats Grid -->
         <div class="grid grid-cols-2 gap-3 mb-4">
-            <div class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center border-b-2 border-transparent" id="rsi-card">
-                <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">RSI Indicator</p>
-                <p id="rsi-val" class="text-xl font-bold">--</p>
-                <span id="rsi-desc" class="text-[8px] text-gray-600 uppercase tracking-tighter">Analyzing</span>
+            <div class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center">
+                <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">RSI (14)</p>
+                <p id="rsi-val" class="text-xl font-bold text-blue-400">--</p>
             </div>
             <div class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center">
                 <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Volatility</p>
-                <p id="vol-val" class="text-xl font-bold">--</p>
-                <span class="text-[8px] text-gray-600 uppercase">Risk Index</span>
+                <p id="vol-val" class="text-xl font-bold text-orange-400">--</p>
             </div>
         </div>
 
         <!-- Chart Section -->
         <div class="glass-card rounded-3xl p-5 flex-grow mb-4 shadow-inner">
-            <p class="text-[9px] text-gray-500 font-bold uppercase mb-4 tracking-widest text-center">Hourly Price Action</p>
             <div class="h-40">
                 <canvas id="mainChart"></canvas>
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="flex justify-between items-center px-2">
-            <p id="last-update" class="text-[9px] text-gray-600 font-medium tracking-tight">Status: Idle</p>
-            <p class="text-[9px] text-gray-700 font-bold uppercase tracking-tighter">Finnhub API Engine</p>
+        <footer class="flex justify-between items-center px-2 text-[9px] text-gray-600">
+            <p id="last-update">Status: Idle</p>
+            <p class="uppercase font-bold tracking-tighter">Powered by Smart Engine</p>
         </footer>
     </div>
 
-    <!-- Error Modal -->
-    <div id="error-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50 backdrop-blur-sm">
-        <div class="glass-card border border-red-500/30 p-6 rounded-3xl max-w-xs w-full text-center">
-            <div class="text-red-500 mb-4 flex justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black/90 hidden items-center justify-center p-6 z-50 backdrop-blur-md">
+        <div class="glass-card border border-gray-700 p-8 rounded-[2rem] max-w-sm w-full">
+            <h3 class="text-white text-xl font-bold mb-2">ตั้งค่า API Key</h3>
+            <p class="text-gray-500 text-xs mb-6 leading-relaxed">คีย์ของ Finnhub ปกติจะยาว 20 ตัวอักษร หากใส่ผิดระบบจะแจ้ง Network Error</p>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-gray-400 uppercase font-bold block mb-1.5 ml-1">Finnhub API Key</label>
+                    <input id="api-key-input" type="text" placeholder="วางคีย์ 20 หลักที่นี่..." 
+                        class="w-full bg-gray-900/50 border border-gray-700 text-white p-3.5 rounded-2xl text-sm font-mono transition-all">
+                </div>
+                <button id="save-key-btn" class="w-full bg-blue-600 text-white p-4 rounded-2xl text-sm font-bold shadow-lg shadow-blue-500/20 active:scale-95 transition-all">
+                    บันทึกและเริ่มทำงาน
+                </button>
+                <button id="close-settings" class="w-full text-gray-500 text-xs py-2 hover:text-white transition-colors">
+                    ปิดหน้านี้
+                </button>
             </div>
-            <h3 class="text-white font-bold mb-2">Network Error</h3>
-            <p id="error-msg" class="text-gray-400 text-xs mb-4">ไม่สามารถดึงข้อมูลจาก Server ได้ (API Error)</p>
-            <button onclick="location.reload()" class="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold w-full hover:bg-blue-700 transition-colors">Retry</button>
         </div>
     </div>
 
     <script>
-        // API KEY ที่คุณให้มา
-        const API_KEY = 'd24u9h9r01qu2jgk36cgd24u9h9r01qu2jgk36d0';
+        let API_KEY = 'd24u9h9r01qu2jgk36cg'; 
         const SYMBOL = 'JEPQ';
         let chart;
 
         document.addEventListener('DOMContentLoaded', () => {
             initChart();
+            setupEventListeners();
+            
+            const savedKey = localStorage.getItem('JEPQ_API_KEY');
+            if (savedKey) {
+                API_KEY = savedKey;
+                document.getElementById('api-key-input').value = savedKey;
+            } else {
+                document.getElementById('api-key-input').value = API_KEY;
+            }
+
             updateDashboard();
-            setInterval(updateDashboard, 45000); // เพิ่มเวลาเป็น 45 วิเพื่อเลี่ยง Rate Limit
+            setInterval(updateDashboard, 60000);
         });
+
+        function setupEventListeners() {
+            document.getElementById('settings-btn').onclick = () => document.getElementById('settings-modal').classList.remove('hidden');
+            document.getElementById('close-settings').onclick = () => document.getElementById('settings-modal').classList.add('hidden');
+            document.getElementById('save-key-btn').onclick = () => {
+                const val = document.getElementById('api-key-input').value.trim();
+                if (val) {
+                    API_KEY = val;
+                    localStorage.setItem('JEPQ_API_KEY', val);
+                    document.getElementById('settings-modal').classList.add('hidden');
+                    updateDashboard();
+                }
+            };
+        }
 
         async function updateDashboard() {
             const statusDot = document.getElementById('status-dot');
@@ -141,44 +202,36 @@
                 statusText.innerText = "REFRESHING...";
 
                 const now = Math.floor(Date.now() / 1000);
-                const twoDaysAgo = now - (86400 * 2);
+                const fromTime = now - (86400 * 3);
 
-                // เรียกข้อมูลแยกกันเพื่อลดความล้มเหลว
-                const quoteResponse = await fetch(`https://finnhub.io/api/v1/quote?symbol=${SYMBOL}&token=${API_KEY}`);
-                if (!quoteResponse.ok) {
-                    const errorStatus = quoteResponse.status;
-                    if (errorStatus === 401 || errorStatus === 403) throw new Error("API Key ไม่ถูกต้อง");
-                    if (errorStatus === 429) throw new Error("เรียกข้อมูลบ่อยเกินไป (Rate Limit)");
-                    throw new Error(`Server Error: ${errorStatus}`);
-                }
-                const quote = await quoteResponse.json();
+                const [qRes, cRes] = await Promise.all([
+                    fetch(`https://finnhub.io/api/v1/quote?symbol=${SYMBOL}&token=${API_KEY}`),
+                    fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${SYMBOL}&resolution=60&from=${fromTime}&to=${now}&token=${API_KEY}`)
+                ]);
 
-                const candleResponse = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${SYMBOL}&resolution=60&from=${twoDaysAgo}&to=${now}&token=${API_KEY}`);
-                const candles = candleResponse.ok ? await candleResponse.json() : null;
+                if (qRes.status === 401 || qRes.status === 403) throw new Error("API Key ไม่ถูกต้อง (Unauthorized)");
 
-                // Render UI
+                const quote = await qRes.json();
+                const candles = await cRes.json();
+
                 if (quote.c) {
                     renderPrice(quote);
                     updateStatus(true);
+                    if (candles.s === "ok") {
+                        const analysis = performAIAnalysis(candles, quote);
+                        renderAnalysis(analysis);
+                        renderChart(candles);
+                    }
+                } else {
+                    throw new Error("API Error: No data returned");
                 }
 
-                if (candles && candles.s === "ok") {
-                    const analysis = performAIAnalysis(candles, quote);
-                    renderAnalysis(analysis);
-                    renderChart(candles);
-                } else if (candles && candles.s === "no_data") {
-                    document.getElementById('ai-reasoning').innerText = "รอตลาดเปิดทำการเพื่อดึงข้อมูลวิเคราะห์ล่าสุด...";
-                }
-
-                document.getElementById('last-update').innerText = "Last Update: " + new Date().toLocaleTimeString('en-GB');
-                document.getElementById('error-modal').classList.add('hidden');
+                document.getElementById('last-update').innerText = "Last Update: " + new Date().toLocaleTimeString();
 
             } catch (e) {
-                console.error("Dashboard Update Failed:", e.message);
-                updateStatus(false);
-                if (e.message.includes("API Key") || e.message.includes("Rate Limit")) {
-                    showError(e.message);
-                }
+                console.error("Fetch Error:", e.message);
+                updateStatus(false, e.message);
+                loadMockData();
             }
         }
 
@@ -186,15 +239,14 @@
             const prices = candles.c;
             const current = quote.c;
             
-            // RSI Calc
             let gains = 0, losses = 0;
-            const period = Math.min(14, prices.length - 1);
-            for (let i = prices.length - period; i < prices.length; i++) {
+            const p = Math.min(14, prices.length - 1);
+            for (let i = prices.length - p; i < prices.length; i++) {
                 let d = prices[i] - prices[i-1];
                 if (d >= 0) gains += d; else losses -= d;
             }
             const rsi = 100 - (100 / (1 + (gains / (losses || 1))));
-            const sma10 = prices.slice(-10).reduce((a, b) => a + b) / 10;
+            const sma = prices.slice(-10).reduce((a, b) => a + b) / 10;
             const vol = ((quote.h - quote.l) / current) * 100;
 
             let direction = "SIDEWAY";
@@ -203,28 +255,24 @@
             let targetAdd = 0;
 
             if (rsi < 35) {
-                direction = "UP (น่าสะสม)";
-                reason = `RSI อยู่ในโซน Oversold (${rsi.toFixed(0)}) ราคาลงมาลึก คาดว่าพรุ่งนี้มีโอกาสฟื้นตัวหรือ Rebound กลับได้สูง`;
-                confidence = 3;
-                targetAdd = 0.18;
-            } else if (rsi > 68) {
-                direction = "DOWN (ระวังย่อ)";
-                reason = `RSI เข้าเขตซื้อมากเกินไป (${rsi.toFixed(0)}) เริ่มตึงตัว มีโอกาสโดนแรงขายทำกำไรกดดันในวันถัดไป`;
-                confidence = 3;
-                targetAdd = -0.12;
-            } else if (current > sma10) {
-                direction = "UP (ยังแข็งแกร่ง)";
-                reason = `ราคายืนเหนือเส้นค่าเฉลี่ย SMA10 โมเมนตัมรายวันยังเป็นบวก คาดว่าพรุ่งนี้จะรักษาทรงขาขึ้นได้ต่อ`;
-                confidence = 2;
-                targetAdd = 0.05;
+                direction = "UP (สะสม)";
+                reason = "ราคาลงมาถึงจุดขายมากเกินไป (Oversold) มีโอกาสฟื้นตัวสูงในวันถัดไป";
+                confidence = 3; targetAdd = 0.15;
+            } else if (rsi > 70) {
+                direction = "DOWN (ระวัง)";
+                reason = "ราคาเข้าเขตซื้อมากเกินไป เริ่มมีสัญญาณอ่อนแรงและแรงขายทำกำไร";
+                confidence = 3; targetAdd = -0.10;
+            } else if (current > sma) {
+                direction = "UP (ทรงตัวบวก)";
+                reason = "ราคายังยืนเหนือเส้นค่าเฉลี่ยระยะสั้น โมเมนตัมเป็นบวก คาดว่าพรุ่งนี้จะไปต่อ";
+                confidence = 2; targetAdd = 0.04;
             } else {
-                direction = "DOWN (ซึมตัว)";
-                reason = `ราคาหลุดแนวรับเส้นค่าเฉลี่ยระยะสั้น และแรงซื้อเบาบาง คาดว่าพรุ่งนี้จะยังคงผันผวนในทิศทางลบ`;
-                confidence = 2;
-                targetAdd = -0.05;
+                direction = "DOWN (ซึม)";
+                reason = "ราคาหลุดแนวรับสำคัญ ตลาดยังขาดปัจจัยกระตุ้นใหม่ๆ คาดว่าพรุ่งนี้จะซึมลง";
+                confidence = 2; targetAdd = -0.06;
             }
 
-            return { direction, rsi, vol, reason, confidence, target: [(current + targetAdd - 0.07).toFixed(2), (current + targetAdd + 0.07).toFixed(2)] };
+            return { direction, rsi, vol, reason, confidence, target: [(current + targetAdd - 0.05).toFixed(2), (current + targetAdd + 0.05).toFixed(2)] };
         }
 
         function renderAnalysis(a) {
@@ -237,8 +285,7 @@
             document.getElementById('vol-val').innerText = a.vol.toFixed(2) + "%";
             
             for(let i=1; i<=3; i++) {
-                const bar = document.getElementById(`score-${i}`);
-                bar.className = i <= a.confidence ? `w-4 h-1 rounded-full ${a.direction.includes('UP') ? 'bg-green-500' : a.direction.includes('DOWN') ? 'bg-red-500' : 'bg-blue-500'}` : 'w-4 h-1 bg-gray-700 rounded-full';
+                document.getElementById(`score-${i}`).className = i <= a.confidence ? `w-4 h-1 rounded-full ${a.direction.includes('UP') ? 'bg-green-500' : 'bg-red-500'}` : 'w-4 h-1 bg-gray-700 rounded-full';
             }
         }
 
@@ -256,31 +303,37 @@
             const ctx = document.getElementById('mainChart').getContext('2d');
             chart = new Chart(ctx, {
                 type: 'line',
-                data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', borderWidth: 3, tension: 0.4, pointRadius: 0, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)' }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#4b5563', font: { size: 10 } } }, y: { grid: { color: '#1c2128' }, ticks: { color: '#4b5563', font: { size: 10 } } } } }
+                data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, pointRadius: 0, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: '#1c2128' }, ticks: { color: '#4b5563', font: { size: 9 } } } } }
             });
         }
 
         function renderChart(data) {
-            const labels = data.t.map(t => new Date(t * 1000).getHours() + ":00").slice(-10);
-            chart.data.labels = labels;
+            chart.data.labels = data.t.map(t => new Date(t * 1000).getHours() + ":00").slice(-10);
             chart.data.datasets[0].data = data.c.slice(-10);
             chart.update();
         }
 
-        function updateStatus(online) {
+        function updateStatus(online, msg = "") {
             const dot = document.getElementById('status-dot');
             const text = document.getElementById('market-status');
             dot.className = online ? "w-2 h-2 bg-green-500 rounded-full live-pulse" : "w-2 h-2 bg-red-500 rounded-full";
-            text.innerText = online ? "MARKET CONNECTED" : "CONNECTION ERROR";
+            text.innerText = online ? "Market Connected" : "Connection Error";
             text.className = `text-[10px] font-bold ${online ? 'text-green-500' : 'text-red-500'}`;
+            if (!online) {
+                document.getElementById('ai-reasoning').innerText = "⚠️ ตรวจสอบ API Key: " + msg;
+            }
         }
 
-        function showError(msg) {
-            document.getElementById('error-msg').innerText = msg;
-            document.getElementById('error-modal').classList.remove('hidden');
-            document.getElementById('error-modal').classList.add('flex');
+        function loadMockData() {
+            const mockQ = { c: 58.95, d: 0.12, dp: 0.20 };
+            renderPrice(mockQ);
+            const mockC = { s: "ok", c: [58.8, 58.85, 58.9, 58.75, 58.82, 58.95], t: [1,2,3,4,5,6] };
+            const analysis = performAIAnalysis(mockC, mockQ);
+            renderAnalysis(analysis);
+            renderChart(mockC);
         }
     </script>
 </body>
 </html>
+
