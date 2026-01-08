@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>JEPQ Smart Predictor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&display=swap');
+        body { 
+            font-family: 'Kanit', sans-serif; 
+            background-color: #0d1117; 
+            color: #c9d1d9;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .glass-card { background: rgba(22, 27, 34, 0.8); border: 1px solid #30363d; backdrop-filter: blur(10px); }
+        .prediction-up { color: #39d353; text-shadow: 0 0 10px rgba(57, 211, 83, 0.3); }
+        .prediction-down { color: #f85149; text-shadow: 0 0 10px rgba(248, 81, 73, 0.3); }
+        @keyframes pulse-fast { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .live-pulse { animation: pulse-fast 1.5s infinite; }
+    </style>
+</head>
+<body class="pb-10">
+
+    <div class="max-w-md mx-auto p-4 flex flex-col min-h-screen">
+        <!-- Header -->
+        <header class="flex justify-between items-start mb-6">
+            <div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">JEPQ <span class="text-blue-500 text-sm font-light italic">Predictor</span></h1>
+                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em]">Data Analysis Dashboard</p>
+            </div>
+            <div class="text-right">
+                <div class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded-full">
+                    <div id="status-dot" class="w-2 h-2 bg-yellow-500 rounded-full live-pulse"></div>
+                    <span id="market-status" class="text-[10px] font-bold text-yellow-400">CONNECTING</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- AI Prediction Section -->
+        <div class="glass-card rounded-3xl p-5 mb-4 border-l-4 border-blue-500 shadow-lg">
+            <h2 class="text-xs font-bold text-blue-400 uppercase mb-3 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                วิเคราะห์แนวโน้มพรุ่งนี้
+            </h2>
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <p id="predict-direction" class="text-3xl font-black text-gray-400">รอข้อมูล...</p>
+                    <p id="predict-range" class="text-xs text-gray-400 mt-1 italic">Target: $-- - $--</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] text-gray-500 uppercase">Confidence Score</p>
+                    <div class="flex gap-1 mt-1 justify-end">
+                        <div id="score-1" class="w-4 h-1 bg-gray-700 rounded-full transition-colors duration-500"></div>
+                        <div id="score-2" class="w-4 h-1 bg-gray-700 rounded-full transition-colors duration-500"></div>
+                        <div id="score-3" class="w-4 h-1 bg-gray-700 rounded-full transition-colors duration-500"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-black/30 rounded-xl p-3 border border-gray-800">
+                <p id="ai-reasoning" class="text-xs text-gray-300 leading-relaxed font-light">
+                    กำลังดึงข้อมูลและประมวลผล...
+                </p>
+            </div>
+        </div>
+
+        <!-- Price Card -->
+        <div id="price-card" class="glass-card rounded-3xl p-6 mb-4 relative overflow-hidden transition-all duration-500">
+            <div class="flex justify-between items-end">
+                <div>
+                    <p class="text-gray-500 text-xs font-bold mb-1 uppercase">Price (USD)</p>
+                    <h2 id="currentPrice" class="text-5xl font-bold tracking-tighter text-white">--.--</h2>
+                </div>
+                <div class="text-right mb-1">
+                    <p id="priceChange" class="text-lg font-bold">--.--</p>
+                    <p id="pricePercent" class="text-xs">--.--%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Indicators Grid -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center border-b-2 border-transparent" id="rsi-card">
+                <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">RSI Indicator</p>
+                <p id="rsi-val" class="text-xl font-bold">--</p>
+                <span id="rsi-desc" class="text-[8px] text-gray-600 uppercase tracking-tighter">Analyzing</span>
+            </div>
+            <div class="glass-card p-4 rounded-2xl flex flex-col items-center justify-center">
+                <p class="text-[9px] text-gray-500 font-bold uppercase mb-1">Volatility</p>
+                <p id="vol-val" class="text-xl font-bold">--</p>
+                <span class="text-[8px] text-gray-600 uppercase">Risk Index</span>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="glass-card rounded-3xl p-5 flex-grow mb-4 shadow-inner">
+            <p class="text-[9px] text-gray-500 font-bold uppercase mb-4 tracking-widest text-center">Hourly Price Action</p>
+            <div class="h-40">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="flex justify-between items-center px-2">
+            <p id="last-update" class="text-[9px] text-gray-600 font-medium tracking-tight">Status: Idle</p>
+            <p class="text-[9px] text-gray-700 font-bold uppercase tracking-tighter">Finnhub API Engine</p>
+        </footer>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center p-6 z-50 backdrop-blur-sm">
+        <div class="glass-card border border-red-500/30 p-6 rounded-3xl max-w-xs w-full text-center">
+            <div class="text-red-500 mb-4 flex justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <h3 class="text-white font-bold mb-2">Network Error</h3>
+            <p id="error-msg" class="text-gray-400 text-xs mb-4">ไม่สามารถดึงข้อมูลจาก Server ได้ (API Error)</p>
+            <button onclick="location.reload()" class="bg-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold w-full hover:bg-blue-700 transition-colors">Retry</button>
+        </div>
+    </div>
+
+    <script>
+        // API KEY ที่คุณให้มา
+        const API_KEY = 'd24u9h9r01qu2jgk36cgd24u9h9r01qu2jgk36d0';
+        const SYMBOL = 'JEPQ';
+        let chart;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initChart();
+            updateDashboard();
+            setInterval(updateDashboard, 45000); // เพิ่มเวลาเป็น 45 วิเพื่อเลี่ยง Rate Limit
+        });
+
+        async function updateDashboard() {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('market-status');
+            
+            try {
+                statusDot.className = "w-2 h-2 bg-yellow-500 rounded-full live-pulse";
+                statusText.innerText = "REFRESHING...";
+
+                const now = Math.floor(Date.now() / 1000);
+                const twoDaysAgo = now - (86400 * 2);
+
+                // เรียกข้อมูลแยกกันเพื่อลดความล้มเหลว
+                const quoteResponse = await fetch(`https://finnhub.io/api/v1/quote?symbol=${SYMBOL}&token=${API_KEY}`);
+                if (!quoteResponse.ok) {
+                    const errorStatus = quoteResponse.status;
+                    if (errorStatus === 401 || errorStatus === 403) throw new Error("API Key ไม่ถูกต้อง");
+                    if (errorStatus === 429) throw new Error("เรียกข้อมูลบ่อยเกินไป (Rate Limit)");
+                    throw new Error(`Server Error: ${errorStatus}`);
+                }
+                const quote = await quoteResponse.json();
+
+                const candleResponse = await fetch(`https://finnhub.io/api/v1/stock/candle?symbol=${SYMBOL}&resolution=60&from=${twoDaysAgo}&to=${now}&token=${API_KEY}`);
+                const candles = candleResponse.ok ? await candleResponse.json() : null;
+
+                // Render UI
+                if (quote.c) {
+                    renderPrice(quote);
+                    updateStatus(true);
+                }
+
+                if (candles && candles.s === "ok") {
+                    const analysis = performAIAnalysis(candles, quote);
+                    renderAnalysis(analysis);
+                    renderChart(candles);
+                } else if (candles && candles.s === "no_data") {
+                    document.getElementById('ai-reasoning').innerText = "รอตลาดเปิดทำการเพื่อดึงข้อมูลวิเคราะห์ล่าสุด...";
+                }
+
+                document.getElementById('last-update').innerText = "Last Update: " + new Date().toLocaleTimeString('en-GB');
+                document.getElementById('error-modal').classList.add('hidden');
+
+            } catch (e) {
+                console.error("Dashboard Update Failed:", e.message);
+                updateStatus(false);
+                if (e.message.includes("API Key") || e.message.includes("Rate Limit")) {
+                    showError(e.message);
+                }
+            }
+        }
+
+        function performAIAnalysis(candles, quote) {
+            const prices = candles.c;
+            const current = quote.c;
+            
+            // RSI Calc
+            let gains = 0, losses = 0;
+            const period = Math.min(14, prices.length - 1);
+            for (let i = prices.length - period; i < prices.length; i++) {
+                let d = prices[i] - prices[i-1];
+                if (d >= 0) gains += d; else losses -= d;
+            }
+            const rsi = 100 - (100 / (1 + (gains / (losses || 1))));
+            const sma10 = prices.slice(-10).reduce((a, b) => a + b) / 10;
+            const vol = ((quote.h - quote.l) / current) * 100;
+
+            let direction = "SIDEWAY";
+            let reason = "";
+            let confidence = 1;
+            let targetAdd = 0;
+
+            if (rsi < 35) {
+                direction = "UP (น่าสะสม)";
+                reason = `RSI อยู่ในโซน Oversold (${rsi.toFixed(0)}) ราคาลงมาลึก คาดว่าพรุ่งนี้มีโอกาสฟื้นตัวหรือ Rebound กลับได้สูง`;
+                confidence = 3;
+                targetAdd = 0.18;
+            } else if (rsi > 68) {
+                direction = "DOWN (ระวังย่อ)";
+                reason = `RSI เข้าเขตซื้อมากเกินไป (${rsi.toFixed(0)}) เริ่มตึงตัว มีโอกาสโดนแรงขายทำกำไรกดดันในวันถัดไป`;
+                confidence = 3;
+                targetAdd = -0.12;
+            } else if (current > sma10) {
+                direction = "UP (ยังแข็งแกร่ง)";
+                reason = `ราคายืนเหนือเส้นค่าเฉลี่ย SMA10 โมเมนตัมรายวันยังเป็นบวก คาดว่าพรุ่งนี้จะรักษาทรงขาขึ้นได้ต่อ`;
+                confidence = 2;
+                targetAdd = 0.05;
+            } else {
+                direction = "DOWN (ซึมตัว)";
+                reason = `ราคาหลุดแนวรับเส้นค่าเฉลี่ยระยะสั้น และแรงซื้อเบาบาง คาดว่าพรุ่งนี้จะยังคงผันผวนในทิศทางลบ`;
+                confidence = 2;
+                targetAdd = -0.05;
+            }
+
+            return { direction, rsi, vol, reason, confidence, target: [(current + targetAdd - 0.07).toFixed(2), (current + targetAdd + 0.07).toFixed(2)] };
+        }
+
+        function renderAnalysis(a) {
+            const dirEl = document.getElementById('predict-direction');
+            dirEl.innerText = a.direction;
+            dirEl.className = `text-3xl font-black ${a.direction.includes('UP') ? 'prediction-up' : a.direction.includes('DOWN') ? 'prediction-down' : 'text-gray-400'}`;
+            document.getElementById('predict-range').innerText = `Target: $${a.target[0]} - $${a.target[1]}`;
+            document.getElementById('ai-reasoning').innerText = a.reason;
+            document.getElementById('rsi-val').innerText = a.rsi.toFixed(0);
+            document.getElementById('vol-val').innerText = a.vol.toFixed(2) + "%";
+            
+            for(let i=1; i<=3; i++) {
+                const bar = document.getElementById(`score-${i}`);
+                bar.className = i <= a.confidence ? `w-4 h-1 rounded-full ${a.direction.includes('UP') ? 'bg-green-500' : a.direction.includes('DOWN') ? 'bg-red-500' : 'bg-blue-500'}` : 'w-4 h-1 bg-gray-700 rounded-full';
+            }
+        }
+
+        function renderPrice(q) {
+            document.getElementById('currentPrice').innerText = q.c.toFixed(2);
+            const isUp = q.d >= 0;
+            const color = isUp ? 'text-green-500' : 'text-red-500';
+            document.getElementById('priceChange').className = `text-lg font-bold ${color}`;
+            document.getElementById('priceChange').innerText = (isUp ? '+' : '') + q.d.toFixed(2);
+            document.getElementById('pricePercent').className = `text-xs ${color}`;
+            document.getElementById('pricePercent').innerText = q.dp.toFixed(2) + "%";
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [{ data: [], borderColor: '#3b82f6', borderWidth: 3, tension: 0.4, pointRadius: 0, fill: true, backgroundColor: 'rgba(59, 130, 246, 0.05)' }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: '#4b5563', font: { size: 10 } } }, y: { grid: { color: '#1c2128' }, ticks: { color: '#4b5563', font: { size: 10 } } } } }
+            });
+        }
+
+        function renderChart(data) {
+            const labels = data.t.map(t => new Date(t * 1000).getHours() + ":00").slice(-10);
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = data.c.slice(-10);
+            chart.update();
+        }
+
+        function updateStatus(online) {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('market-status');
+            dot.className = online ? "w-2 h-2 bg-green-500 rounded-full live-pulse" : "w-2 h-2 bg-red-500 rounded-full";
+            text.innerText = online ? "MARKET CONNECTED" : "CONNECTION ERROR";
+            text.className = `text-[10px] font-bold ${online ? 'text-green-500' : 'text-red-500'}`;
+        }
+
+        function showError(msg) {
+            document.getElementById('error-msg').innerText = msg;
+            document.getElementById('error-modal').classList.remove('hidden');
+            document.getElementById('error-modal').classList.add('flex');
+        }
+    </script>
+</body>
+</html>
